@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Declare",
+  "version": "1.0.0",
+  "identifier": "com.declare.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Declare",
+        "maximized": true,
+        "decorations": true,
+        "resizable": true,
+        "dragDropEnabled": false,
+        "zoomHotkeysEnabled": false
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      },
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost https://asset.localhost blob: data:; media-src 'self' asset: http://asset.localhost https://asset.localhost blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJFNzNGQjhCMzQxNDhGMkUKUldRdWp4UTBpL3R6dnVrSWh3WmVWNU95RlVFRnRNSVB2d1phR0tCbzNiQlVYOW1yVkVtaEFsTFoK",
+      "endpoints": ["https://github.com/ArtemPodloboshnikov/Declare/releases/latest/download/latest.json"]
+    }
+  }
+}
