@@ -57,7 +57,12 @@ export async function buildExport(
 ): Promise<BuiltExport> {
   const { inlineAssets = false } = options;
   const assets: ExportAsset[] = [];
-  const chartSource = await fetch('/chart.umd.js').then(r => r.text());
+  const hasCharts = slides.some(slide =>
+    slide.elements.some(el => el.type === 'chart')
+  );
+  const chartSource = hasCharts
+    ? await fetch('/chart.umd.js').then(r => r.text())
+    : '';
   const urlMap = new Map<string, string>();
 
   const slidesHtml: string[] = [];

@@ -8,9 +8,6 @@
   import Move3d from '@lucide/svelte/icons/move-3d';
   import FlipHorizontal from '@lucide/svelte/icons/flip-horizontal-2';
   import FlipVertical from '@lucide/svelte/icons/flip-vertical-2';
-  import AlignLeft from '@lucide/svelte/icons/align-left';
-  import AlignCenter from '@lucide/svelte/icons/align-center';
-  import AlignRight from '@lucide/svelte/icons/align-right';
   import AlignStartVertical from '@lucide/svelte/icons/align-start-vertical';
   import AlignCenterVertical from '@lucide/svelte/icons/align-center-vertical';
   import AlignEndVertical from '@lucide/svelte/icons/align-end-vertical';
@@ -443,7 +440,7 @@
 
   <!-- ========== Выравнивание ========== -->
   <header class="panel-subheader">
-    <AlignCenter size={14} strokeWidth={1.75} />
+    <AlignCenterVertical size={14} strokeWidth={1.75} />
     <span>{t('align.title')}</span>
   </header>
 
