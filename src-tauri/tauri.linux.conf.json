@@ -1,6 +1,6 @@
 {
   "bundle": {
-    "targets": ["deb", "rpm", "AppImage"],
+    "targets": ["deb", "rpm", "appimage"],
     "linux": {
       "deb": { "depends": [] },
       "rpm": { "depends": [] }
