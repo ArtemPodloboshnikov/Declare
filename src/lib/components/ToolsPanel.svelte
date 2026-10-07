@@ -129,7 +129,7 @@
 
     switch (type) {
       case 'text': {
-        el.content = 'Введите текст';
+        el.content = t('tools.textInputDefaultText');
         el.style = { color: '#e8e8f0', fontSize: '24px' };
         el.position = { x: 80, y: 80, width: 500, height: 100 };
         presentation.addElement(el);

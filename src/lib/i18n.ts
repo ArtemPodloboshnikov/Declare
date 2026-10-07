@@ -68,6 +68,7 @@ const ru: Dict = {
   'tools.tipDrag': 'Перетаскивайте элементы мышью',
   'tools.tipDelete': 'Delete — удалить выбранное',
   'tools.tipPaste': 'Ctrl+V — вставить данные в таблицу',
+  'tools.textInputDefaultText': 'Введите текст',
 
   // ============================================================
   // SHAPES
@@ -175,6 +176,9 @@ const ru: Dict = {
   'table.preset.bordered': 'Рамка',
   'table.preset.accent': 'Акцент',
   'table.preset.light': 'Светлая',
+  'table.head1': 'Заголовок 1',
+  'table.head2': 'Заголовок 2',
+  'table.head3': 'Заголовок 3',
 
   // ============================================================
   // CHART
@@ -552,6 +556,7 @@ const en: Dict = {
   'tools.tipDrag': 'Drag elements with the mouse',
   'tools.tipDelete': 'Delete — remove selection',
   'tools.tipPaste': 'Ctrl+V — paste data into table',
+  'tools.textInputDefaultText': 'Enter the text',
 
   // ============================================================
   // SHAPES
@@ -659,6 +664,9 @@ const en: Dict = {
   'table.preset.bordered': 'Bordered',
   'table.preset.accent': 'Accent',
   'table.preset.light': 'Light',
+  'table.head1': 'Heading 1',
+  'table.head2': 'Heading 2',
+  'table.head3': 'Heading 3',
 
   // ============================================================
   // CHART

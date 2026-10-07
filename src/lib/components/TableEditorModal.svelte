@@ -18,7 +18,7 @@
 
   let hasHeader = $state(true);
   let grid = $state<string[][]>([
-    ['Заголовок 1', 'Заголовок 2', 'Заголовок 3'],
+    [t('table.head1'), t('table.head2'), t('table.head3')],
     ['', '', ''],
     ['', '', '']
   ]);
