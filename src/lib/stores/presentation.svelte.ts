@@ -646,6 +646,7 @@ function createPresentationStore() {
     enterShapeEdit(id: string) { editingShapeId = id; },
     exitShapeEdit() { editingShapeId = null; },
     get selectedElementId() { return selectedElementId; },
+    set selectedElementIds(v: string[]) { selectedElementIds = v },
     set selectedElementId(v: string | null) {
       selectedElementIds = v === null ? [] : [v];
     },
@@ -738,6 +739,32 @@ function createPresentationStore() {
       });
     },
 
+    addElements(elements: SlideElement[]) {
+      withHistory(draft => {
+        const slide = draft[currentSlideIndex];
+        if (!slide) return;
+        slide.elements.push(...elements);
+      });
+    },
+
+    removeElement(id: string) {
+      withHistory(draft => {
+        const slide = draft[currentSlideIndex];
+        if (!slide) return;
+        slide.elements = slide.elements.filter(e => e.id !== id);
+      });
+      selectedElementIds = selectedElementIds.filter(x => x !== id);
+    },
+
+    removeElements(ids: string[]) {
+      withHistory(draft => {
+        const slide = draft[currentSlideIndex];
+        if (!slide) return;
+        slide.elements = slide.elements.filter(e => !ids.includes(e.id));
+      });
+      selectedElementIds = selectedElementIds.filter(x => !ids.includes(x));
+    },
+
     updateElement(id: string, updates: Partial<SlideElement>, debounce = false) {
       const apply = (draft: Slide[]) => {
         const slide = draft[currentSlideIndex];
@@ -755,15 +782,6 @@ function createPresentationStore() {
       } else {
         withHistory(apply);
       }
-    },
-
-    removeElement(id: string) {
-      withHistory(draft => {
-        const slide = draft[currentSlideIndex];
-        if (!slide) return;
-        if (slide) slide.elements = slide.elements.filter(e => e.id !== id);
-      });
-      selectedElementIds = selectedElementIds.filter(x => x !== id);
     },
 
     replaceSlide(index: number, slide: Slide) {

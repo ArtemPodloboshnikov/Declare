@@ -20,6 +20,7 @@
   import { Clapperboard, Plus, RotateCcw, Trash } from '@lucide/svelte';
   import { animationClass, animationStyle } from '$lib/services/animations';
   import { escapeHtml } from '$lib/services/common';
+  import { readText, writeText } from '@tauri-apps/plugin-clipboard-manager';
 
   // Отслеживаем, редактируется ли сейчас текст
   let editingElementId = $state<string | null>(null);
@@ -32,6 +33,103 @@
   let panY = $state(0);
   let spaceHeld = $state(false);
   let dropActive = $state(false);
+  const CLIPBOARD_PREFIX = 'DECLARE_ELEMENTS:';
+  let internalClipboard: SlideElement[] = [];
+
+  async function copySelected() {
+    const slide = presentation.currentSlide;
+    if (!slide) return;
+
+    const selected = slide.elements.filter(e =>
+      presentation.selectedElementIds.includes(e.id)
+    );
+    if (!selected.length) return;
+
+    // Снимаем Proxy через $state.snapshot
+    const clones = selected.map(el => {
+      const clone = $state.snapshot(el) as SlideElement;
+      const { id, ...rest } = clone;
+      return rest as SlideElement;
+    });
+
+    internalClipboard = clones;
+
+    try {
+      const payload = CLIPBOARD_PREFIX + JSON.stringify(clones);
+      await writeText(payload);
+    } catch {}
+  }
+
+  async function cutSelected() {
+    const slide = presentation.currentSlide;
+    if (!slide) return;
+
+    const ids = presentation.selectedElementIds;
+    if (!ids.length) return;
+
+    await copySelected();
+
+    presentation.removeElements(ids);
+    presentation.selectedElementIds = [];
+  }
+
+  async function pasteFromClipboard() {
+    const slide = presentation.currentSlide;
+    if (!slide) return;
+
+    let source: SlideElement[] | null = null;
+
+    // 1. Пытаемся прочитать системный буфер
+    try {
+      const text = await readText();
+      if (text && text.startsWith(CLIPBOARD_PREFIX)) {
+        const json = text.slice(CLIPBOARD_PREFIX.length);
+        const parsed = JSON.parse(json);
+        if (Array.isArray(parsed) && parsed.length) {
+          source = parsed as SlideElement[];
+        }
+      }
+    } catch {}
+
+    // 2. Фолбэк на внутренний буфер
+    if (!source && internalClipboard.length) {
+      source = internalClipboard;
+    }
+
+    if (!source || !source.length) return;
+
+    const OFFSET = 20;
+
+    const newIds: string[] = [];
+    const newElements: SlideElement[] = source.map(el => {
+      const id = crypto.randomUUID();
+      newIds.push(id);
+      return {
+        ...structuredClone(el),
+        id,
+        position: {
+          ...el.position,
+          x: el.position.x + OFFSET,
+          y: el.position.y + OFFSET
+        }
+      };
+    });
+
+    presentation.addElements(newElements);
+    presentation.selectedElementIds = newIds;
+
+    // Обновляем внутренний буфер — следующий Ctrl+V сдвинет ещё дальше
+    internalClipboard = newElements.map(el => {
+      const clone = structuredClone(el) as SlideElement;
+      delete (clone as any).id;
+      return clone;
+    });
+  }
+
+  async function duplicateSelected() {
+    await copySelected();
+    await pasteFromClipboard();
+  }
 
   // Состояние активного панорамирования
   let panning = $state<{
@@ -604,10 +702,29 @@
   }
 
   function onKeyDown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement;
+    const inField = target.closest('input, textarea, [contenteditable="true"]');
+    // ---------- Модификаторы: Ctrl/Cmd ----------
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && !inField) {
+      switch (e.code) {
+        case 'KeyC':
+          e.preventDefault();
+          void copySelected();
+          return;
+        case 'KeyX':
+          e.preventDefault();
+          cutSelected();
+          return;
+        case 'KeyD':
+          e.preventDefault();
+          duplicateSelected();
+          return;
+      }
+    }
+
     if (e.code === 'Space') {
       spaceHeld = true;
-      const target = e.target as HTMLElement;
-      const inField = target.closest('input, textarea, [contenteditable="true"]');
       if (!inField) e.preventDefault();
     }
 
@@ -624,8 +741,6 @@
     }
 
     // ---------- Стрелки: перемещение выбранного элемента ----------
-    const target = e.target as HTMLElement;
-    const inField = target.closest('input, textarea, [contenteditable="true"]');
     if (inField) return;
 
     if (!presentation.selectedElementId) return;
@@ -792,7 +907,7 @@
     app.notify(t('toast.dropAdded', { name: file.name }), 'success');
   }
 
-  function onPaste(e: ClipboardEvent) {
+  async function onPaste(e: ClipboardEvent) {
     const target = e.target as HTMLElement;
     if (target.closest('input, textarea, [contenteditable="true"]')) {
       return;
@@ -804,7 +919,7 @@
     const files = Array.from(data.files ?? []);
     const text = data.getData('text/plain');
 
-    // Приоритет: файлы
+    // ---- 1. Файлы ----
     if (files.length) {
       e.preventDefault();
       for (const file of files) {
@@ -818,17 +933,31 @@
       return;
     }
 
-    // Текст
-    if (text) {
+    // ---- 2. Наши элементы ----
+    if (text && text.startsWith(CLIPBOARD_PREFIX)) {
+      e.preventDefault();
+      await pasteFromClipboard();   // ← вставляем элементы
+      return;
+    }
+
+    // ---- 3. Обычный текст извне ----
+    if (text && text.trim()) {
       e.preventDefault();
       const slide = presentation.currentSlide;
       if (!slide) return;
+
+      const lines = text.split('\n');
+      const maxLineLength = Math.max(...lines.map(l => l.length), 10);
+      const fontSize = 24;
+      const width = Math.min(1120, Math.max(200, Math.round(maxLineLength * fontSize * 0.6)));
+      const height = Math.min(600, Math.max(60, Math.round(lines.length * fontSize * 1.5)));
+
       presentation.addElement({
         id: crypto.randomUUID(),
         type: 'text',
         content: escapeHtml(text).replace(/\n/g, '<br>'),
-        style: { color: '#e8e8f0', fontSize: '24px' },
-        position: { x: 80, y: 80, width: 500, height: 100 }
+        style: { color: '#e8e8f0', fontSize: `${fontSize}px` },
+        position: { x: 80, y: 80, width, height }
       });
       app.notify(t('toast.pasteText'), 'success');
     }

@@ -530,7 +530,10 @@
       <li><kbd>Ctrl</kbd> + <kbd>S</kbd> — {t('shortcuts.exportHtml')}</li>
       <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> — {t('shortcuts.exportPdf')}</li>
       <li><kbd>Ctrl</kbd> + <kbd>O</kbd> — {t('shortcuts.open')}</li>
+      <li><kbd>Ctrl</kbd> + <kbd>C</kbd> — {t('shortcuts.copy')}</li>
+      <li><kbd>Ctrl</kbd> + <kbd>X</kbd> — {t('shortcuts.cut')}</li>
       <li><kbd>Ctrl</kbd> + <kbd>V</kbd> — {t('shortcuts.paste')}</li>
+      <li><kbd>Ctrl</kbd> + <kbd>D</kbd> — {t('shortcuts.duplicate')}</li>
     </ul>
   </section>
 </div>
