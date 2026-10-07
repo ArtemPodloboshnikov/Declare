@@ -22,7 +22,45 @@ on:
         type: string
 
 jobs:
+  # ============================================================
+  #  СОЗДАЁМ РЕЛИЗ ОДИН РАЗ
+  #  Это устраняет гонку между матричными job'ами,
+  #  которые параллельно пытались удалять/загружать asset'ы.
+  # ============================================================
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      tag_name: ${{ steps.resolve_tag.outputs.tag }}
+    steps:
+      - name: Resolve tag name
+        id: resolve_tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          name: "Declare ${{ steps.resolve_tag.outputs.tag }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+
+  # ============================================================
+  #  МАТРИЧНАЯ СБОРКА
+  #  tauri-action добавляет asset'ы в уже существующий релиз.
+  # ============================================================
   release:
+    needs: create-release
     permissions:
       contents: write
     strategy:
@@ -93,9 +131,11 @@ jobs:
       - name: Install frontend dependencies
         if: steps.should_run.outputs.run == 'true'
         run: npm ci
+
       # ============================================================
       #  BUILD AND RELEASE
-      #  tauri-action сам создаст и смержит latest.json
+      #  tauri-action использует уже существующий релиз по tagName
+      #  и добавляет asset'ы. Гонки больше нет — релиз создан один раз.
       # ============================================================
       - name: Build and release
         if: steps.should_run.outputs.run == 'true'
@@ -107,8 +147,9 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
           NO_STRIP: 1
         with:
-          tagName: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-          releaseName: "Declare ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          tagName: ${{ needs.create-release.outputs.tag_name }}
+          releaseName: "Declare ${{ needs.create-release.outputs.tag_name }}"
+          releaseId: ${{ needs.create-release.outputs.release_id }}
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
