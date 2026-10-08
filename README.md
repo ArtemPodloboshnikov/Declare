@@ -123,14 +123,31 @@ Download the latest version for your platform from the [**Releases**](https://gi
 | `Ctrl` + wheel | Zoom canvas |
 | `Ctrl+Z` | Undo |
 | `Ctrl+Shift+Z` / `Ctrl+Y` | Redo |
+| `Ctrl+C` | Copy selection |
+| `Ctrl+X` | Cut selection |
+| `Ctrl+V` | Paste (element / text / file / data) |
+| `Ctrl+D` | Duplicate selection |
 | `Ctrl+S` | Export HTML |
 | `Ctrl+Shift+S` | Export PDF |
 | `Ctrl+O` | Open presentation |
-| `Ctrl+V` | Paste file / text / data |
-| `F5` | Preview in browser |
-| `Shift+F5` | Present from current slide |
+| `F5` | Preview in browser (from the first slide) |
+| `Shift+F5` | Preview in browser (from the current slide) |
 
 You can always find it in the bottom **Tools**.
+
+### Presentation in browser
+
+These shortcuts work in the exported HTML file opened in a browser.
+
+| Shortcut | Action |
+|---|---|
+| `→` / `↓` / `Space` / `Enter` / `PageDown` | Next slide |
+| `←` / `↑` / `PageUp` | Previous slide |
+| `Home` | First slide |
+| `End` | Last slide |
+| Click on slide | Next slide (advance) |
+| Click on control | Play / pause audio or video |
+| `Esc` (in some viewers) | Exit fullscreen |
 
 ---
 
